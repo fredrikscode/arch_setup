@@ -1,0 +1,46 @@
+#!/bin/bash
+
+DISK='/dev/vda'
+
+partition() {
+    read -p "Are you sure you want to format $DISK [y/n]? " confirm
+
+    if [[ "$confirm" == "y" ]]; then
+        # Start fdisk session on the chosen disk
+        fdisk $DISK <<EOF
+o                             # Delete all partitions and start with an empty disk
+
+n                             # New partition
+p                             # Primary partition
+1                             # Partition number 1
+                             # Default - start at the beginning
++500M                         # Size of the partition
+t
+1                             # EFI System
+
+n                             # New partition
+p                             # Primary partition
+2                             # Partition number 2
+                             # Default - start immediately after the previous partition
++8G                           # Size of the partition
+t
+82                            # Linux swap / Solaris
+
+n                             # New partition
+p                             # Primary partition
+3                             # Partition number 3
+                             # Default - start immediately after the previous partition
+                             # Default - use remaining space
+t
+83                            # Linux
+
+w                             # Write changes and exit
+EOF
+
+    else
+        echo "Cancelling.."
+        exit 1
+    fi
+}
+
+partition
